@@ -9,7 +9,7 @@ package librarydemo;
  * @author joseph
  */
 public class MyConnection {
-    private final String dbUsername = "root";
+    private  String dbUsername = "root";
     private final String dbPass="dev123sql$%^";
     private final String dbName="demolibrary";
     private final String dbConnection = "jdbc:mySql://localhost/";
@@ -18,7 +18,7 @@ public class MyConnection {
         return dbUsername;
     }
     
-    public String getDatabasePassword(){
+    public String getDatabasePassword(){ 
         return dbPass;
     }
     
@@ -28,5 +28,8 @@ public class MyConnection {
     
     public String getConnection(){
         return dbConnection;
+    }
+    public void setDatabaseUsername(String value){
+        dbUsername = value;
     }
 }
