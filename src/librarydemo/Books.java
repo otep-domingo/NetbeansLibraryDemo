@@ -36,21 +36,26 @@ public class Books extends javax.swing.JFrame {
      */
     public Books() {
         initComponents();
-        populateTable();//calling or invoking the function
+        populateTable("");//calling or invoking the function
         populateAuthor();
-        ImageIcon icon = new ImageIcon("C:\\Users\\joseph\\Downloads\\gui_refresh_icon_157047.png");
-        jBtnRefresh.setIcon(icon);
     }
 
     //function to populate the table
-    private void populateTable() {
+    private void populateTable(String searchkey) {
         try {
             MyConnection cc = new MyConnection();
             Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
                     cc.getDatabaseUsername(),
                     cc.getDatabasePassword());
             Statement st = con.createStatement();
-            String sql = "SELECT * FROM BOOKS";
+            String sql = "";
+            if(searchkey.equals("")){
+                sql = "SELECT books.id, books.title, authors.name, books.category, books.summary, books.borrowed FROM BOOKS inner join authors on books.author_id = authors.id";
+            }else{
+                sql = "SELECT books.id, books.title, authors.name, books.category, books.summary, books.borrowed "
+                        + "FROM BOOKS inner join authors on books.author_id = authors.id "
+                        + "WHERE title like '%" + searchkey +"%'";
+            }
             ResultSet rs = st.executeQuery(sql);
 
             //Retrieving the ResultSetMetadata object
@@ -82,8 +87,6 @@ public class Books extends javax.swing.JFrame {
         }
     }
 
-
-    
     private void populateAuthor() {
         try {
             MyConnection cc = new MyConnection();
@@ -95,15 +98,14 @@ public class Books extends javax.swing.JFrame {
             ResultSet rs = st.executeQuery(sql);
 
             DefaultComboBoxModel model = new DefaultComboBoxModel();
-            
-            
+
             while (rs.next()) {
-                  model.addElement(new ItemKeyValue(
-                  rs.getString("id"),
-                     rs.getString("name")
-                  ));
+                model.addElement(new ItemKeyValue(
+                        rs.getString("id"),
+                        rs.getString("name")
+                ));
             }
-           jCboAuthor.setModel(model);
+            jCboAuthor.setModel(model);
             rs.close();
             st.close();
             con.close();
@@ -166,13 +168,26 @@ public class Books extends javax.swing.JFrame {
                 "A", "B", "Title 3", "Title 4"
             }
         ));
+        jTblBooks.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jTblBooks.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTblBooksMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTblBooks);
 
         jLabel2.setText("Enter search keyword");
 
         jBtnSearch.setText("Search");
+        jBtnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnSearchActionPerformed(evt);
+            }
+        });
 
         jLabel3.setText("Book ID");
+
+        jTxtBookId.setEnabled(false);
 
         jLabel4.setText("Title");
 
@@ -194,8 +209,18 @@ public class Books extends javax.swing.JFrame {
         });
 
         jBtnUpdate.setText("Update");
+        jBtnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnUpdateActionPerformed(evt);
+            }
+        });
 
         jBtnDelete.setText("Delete");
+        jBtnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnDeleteActionPerformed(evt);
+            }
+        });
 
         jBtnBorrow.setText("Borrow");
 
@@ -312,39 +337,136 @@ public class Books extends javax.swing.JFrame {
 
     private void jBtnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnRefreshActionPerformed
         // TODO add your handling code here:
-        populateTable();
+        populateTable("");
     }//GEN-LAST:event_jBtnRefreshActionPerformed
 
     private void jBtnInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnInsertActionPerformed
-        // TODO add your handling code here:
+
         //set the insert statement
         String sql = "Insert into books (title, author_id, category, summary) values (?,?,?,?)";
-         try {
+        try {
             MyConnection cc = new MyConnection();
             Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
                     cc.getDatabaseUsername(),
                     cc.getDatabasePassword());
             PreparedStatement pst = con.prepareStatement(sql);
             //get the selected author
-            ItemKeyValue auth = (ItemKeyValue)jCboAuthor.getSelectedItem();
-            
+            ItemKeyValue auth = (ItemKeyValue) jCboAuthor.getSelectedItem();
+
             System.out.println("ID: " + auth.getKey());
             pst.setString(1, jTxtTitle.getText());
             pst.setInt(2, Integer.parseInt(auth.getKey()));
             pst.setString(3, jTxtCategory.getText());
             pst.setString(4, jTxtSummary.getText());
-            
+
             int row = pst.executeUpdate();
             //call the populateTable to refresh the content
-            populateTable();
-            
+            populateTable("");
+
             pst.close();
             con.close();
-            JOptionPane.showMessageDialog(rootPane, row + " New record inserted.");
+            JOptionPane.showMessageDialog(rootPane, row + "  record/s added.",
+                        "Record deleted",
+                        JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }//GEN-LAST:event_jBtnInsertActionPerformed
+
+    private void jTblBooksMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTblBooksMouseClicked
+        // TODO add your handling code here:
+        int row = jTblBooks.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel) jTblBooks.getModel();
+
+        jTxtBookId.setText(model.getValueAt(row, 0).toString());
+        jTxtTitle.setText(model.getValueAt(row, 1).toString());
+        jTxtCategory.setText(model.getValueAt(row, 3).toString());
+        jTxtSummary.setText(model.getValueAt(row, 4).toString());
+        String author = model.getValueAt(row, 2).toString();
+                
+        DefaultComboBoxModel cModel = (DefaultComboBoxModel) jCboAuthor.getModel();
+        ItemKeyValue currentAuthor = new ItemKeyValue("0","null");
+        for(int i=0;i<cModel.getSize();i++){
+            ItemKeyValue kv = (ItemKeyValue)cModel.getElementAt(i);
+            if(author.equals(kv.getValue())){
+                currentAuthor = kv;
+                break;
+            }
+        }
+        jCboAuthor.getModel().setSelectedItem(currentAuthor);
+    }//GEN-LAST:event_jTblBooksMouseClicked
+
+    private void jBtnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnUpdateActionPerformed
+        //set the insert statement
+        String sql = "Update books set title=?, author_id =?, category=?, summary=? where id=?";
+        try {
+            MyConnection cc = new MyConnection();
+            Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
+                    cc.getDatabaseUsername(),
+                    cc.getDatabasePassword());
+            PreparedStatement pst = con.prepareStatement(sql);
+            //get the selected author
+            ItemKeyValue auth = (ItemKeyValue) jCboAuthor.getSelectedItem();
+
+            System.out.println("ID: " + auth.getKey());
+            pst.setString(1, jTxtTitle.getText());
+            pst.setInt(2, Integer.parseInt(auth.getKey()));
+            pst.setString(3, jTxtCategory.getText());
+            pst.setString(4, jTxtSummary.getText());
+            pst.setInt(5, Integer.parseInt(jTxtBookId.getText()));
+
+            int row = pst.executeUpdate();
+            //call the populateTable to refresh the content
+            populateTable("");
+
+            pst.close();
+            con.close();
+            JOptionPane.showMessageDialog(rootPane, row + "  record/s updated.",
+                        "Record deleted",
+                        JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }//GEN-LAST:event_jBtnUpdateActionPerformed
+
+    private void jBtnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnDeleteActionPerformed
+        // TODO add your handling code here:
+        //do a confirmation
+        int answer = JOptionPane.showConfirmDialog(rootPane, "Are you sure you want to delete the record?",
+                "Confirm Delete",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (answer == JOptionPane.YES_OPTION) {
+            String sql = "Delete from books where id=?";
+            try {
+                MyConnection cc = new MyConnection();
+                Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
+                        cc.getDatabaseUsername(),
+                        cc.getDatabasePassword());
+                PreparedStatement pst = con.prepareStatement(sql);
+                //get the selected author
+                pst.setInt(1, Integer.parseInt(jTxtBookId.getText()));
+
+                int row = pst.executeUpdate();
+                //call the populateTable to refresh the content
+                populateTable("");
+
+                pst.close();
+                con.close();
+                JOptionPane.showMessageDialog(rootPane, row + "  record/s deleted.",
+                        "Record deleted",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }//GEN-LAST:event_jBtnDeleteActionPerformed
+
+    private void jBtnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSearchActionPerformed
+        // TODO add your handling code here:
+        populateTable(jTxtSearch.getText());
+    }//GEN-LAST:event_jBtnSearchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -406,5 +528,3 @@ public class Books extends javax.swing.JFrame {
     private javax.swing.JTextField jTxtTitle;
     // End of variables declaration//GEN-END:variables
 }
-
-
