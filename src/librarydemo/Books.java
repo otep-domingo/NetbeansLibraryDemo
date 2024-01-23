@@ -49,12 +49,12 @@ public class Books extends javax.swing.JFrame {
                     cc.getDatabasePassword());
             Statement st = con.createStatement();
             String sql = "";
-            if(searchkey.equals("")){
+            if (searchkey.equals("")) {
                 sql = "SELECT books.id, books.title, authors.name, books.category, books.summary, books.borrowed FROM BOOKS inner join authors on books.author_id = authors.id";
-            }else{
+            } else {
                 sql = "SELECT books.id, books.title, authors.name, books.category, books.summary, books.borrowed "
                         + "FROM BOOKS inner join authors on books.author_id = authors.id "
-                        + "WHERE title like '%" + searchkey +"%'";
+                        + "WHERE title like '%" + searchkey + "%'";
             }
             ResultSet rs = st.executeQuery(sql);
 
@@ -145,6 +145,8 @@ public class Books extends javax.swing.JFrame {
         jBtnBorrow = new javax.swing.JButton();
         jCboAuthor = new javax.swing.JComboBox<>();
         jBtnRefresh = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        jTxtStatus = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Books");
@@ -223,6 +225,11 @@ public class Books extends javax.swing.JFrame {
         });
 
         jBtnBorrow.setText("Borrow");
+        jBtnBorrow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnBorrowActionPerformed(evt);
+            }
+        });
 
         jBtnRefresh.setText("Refresh");
         jBtnRefresh.addActionListener(new java.awt.event.ActionListener() {
@@ -230,6 +237,10 @@ public class Books extends javax.swing.JFrame {
                 jBtnRefreshActionPerformed(evt);
             }
         });
+
+        jLabel8.setText("Status");
+
+        jTxtStatus.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -255,28 +266,31 @@ public class Books extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel4))
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jTxtTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                                    .addComponent(jTxtBookId)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel6)
-                                            .addComponent(jLabel5))
-                                        .addGap(18, 18, 18))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel7)
-                                        .addGap(15, 15, 15)))
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jScrollPane2)
-                                    .addComponent(jTxtCategory, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-                                    .addComponent(jCboAuthor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel3)
+                                        .addComponent(jLabel4))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jTxtTitle, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                                        .addComponent(jTxtBookId)))
+                                .addGroup(layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jLabel6)
+                                                .addComponent(jLabel5))
+                                            .addGap(18, 18, 18))
+                                        .addGroup(layout.createSequentialGroup()
+                                            .addComponent(jLabel7)
+                                            .addGap(15, 15, 15)))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jScrollPane2)
+                                        .addComponent(jTxtCategory, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+                                        .addComponent(jCboAuthor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addComponent(jTxtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 306, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(55, 55, 55)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jBtnInsert, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -324,7 +338,11 @@ public class Books extends javax.swing.JFrame {
                     .addComponent(jLabel7)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBtnBorrow))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(jTxtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -366,8 +384,8 @@ public class Books extends javax.swing.JFrame {
             pst.close();
             con.close();
             JOptionPane.showMessageDialog(rootPane, row + "  record/s added.",
-                        "Record deleted",
-                        JOptionPane.INFORMATION_MESSAGE);
+                    "Record deleted",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -382,13 +400,14 @@ public class Books extends javax.swing.JFrame {
         jTxtTitle.setText(model.getValueAt(row, 1).toString());
         jTxtCategory.setText(model.getValueAt(row, 3).toString());
         jTxtSummary.setText(model.getValueAt(row, 4).toString());
+        jTxtStatus.setText(model.getValueAt(row, 5).toString());
         String author = model.getValueAt(row, 2).toString();
-                
+
         DefaultComboBoxModel cModel = (DefaultComboBoxModel) jCboAuthor.getModel();
-        ItemKeyValue currentAuthor = new ItemKeyValue("0","null");
-        for(int i=0;i<cModel.getSize();i++){
-            ItemKeyValue kv = (ItemKeyValue)cModel.getElementAt(i);
-            if(author.equals(kv.getValue())){
+        ItemKeyValue currentAuthor = new ItemKeyValue("0", "null");
+        for (int i = 0; i < cModel.getSize(); i++) {
+            ItemKeyValue kv = (ItemKeyValue) cModel.getElementAt(i);
+            if (author.equals(kv.getValue())) {
                 currentAuthor = kv;
                 break;
             }
@@ -422,8 +441,8 @@ public class Books extends javax.swing.JFrame {
             pst.close();
             con.close();
             JOptionPane.showMessageDialog(rootPane, row + "  record/s updated.",
-                        "Record deleted",
-                        JOptionPane.INFORMATION_MESSAGE);
+                    "Record deleted",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -467,6 +486,19 @@ public class Books extends javax.swing.JFrame {
         // TODO add your handling code here:
         populateTable(jTxtSearch.getText());
     }//GEN-LAST:event_jBtnSearchActionPerformed
+
+    private void jBtnBorrowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBorrowActionPerformed
+        // TODO add your handling code here:
+        if (jTxtStatus.getText().equals("No")) {
+            BookInfo info = new BookInfo(Integer.parseInt(jTxtBookId.getText()),
+                    jTxtTitle.getText(),
+                    "No");
+            BorrowBook b = new BorrowBook(info);
+            b.setVisible(true);
+        }else{
+            JOptionPane.showMessageDialog(rootPane, "The book is not available for borrowing.","Borrow Book",JOptionPane.OK_OPTION);
+        }
+    }//GEN-LAST:event_jBtnBorrowActionPerformed
 
     /**
      * @param args the command line arguments
@@ -518,12 +550,14 @@ public class Books extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTblBooks;
     private javax.swing.JTextField jTxtBookId;
     private javax.swing.JTextField jTxtCategory;
     private javax.swing.JTextField jTxtSearch;
+    private javax.swing.JTextField jTxtStatus;
     private javax.swing.JTextArea jTxtSummary;
     private javax.swing.JTextField jTxtTitle;
     // End of variables declaration//GEN-END:variables

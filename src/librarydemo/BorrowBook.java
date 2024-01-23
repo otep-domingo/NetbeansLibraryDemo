@@ -4,7 +4,13 @@
  */
 package librarydemo;
 
-import librarydemo.Classes.BookInfo;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.sql.*;
+import java.time.LocalDate;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -12,16 +18,72 @@ import librarydemo.Classes.BookInfo;
  */
 public class BorrowBook extends javax.swing.JFrame {
 
+    String borrowerName = "";
+    int borrowerId;
+
     /**
      * Creates new form BorrowBook
      */
     public BorrowBook() {
         initComponents();
+        populateBorrower("");
     }
 
-    public BorrowBook(BookInfo b){
+    public BorrowBook(BookInfo info) {
         initComponents();
+        populateBorrower("");
+        jBookID.setText(Integer.toString(info.getId()));
+        jBookTitle.setText(info.getTitle());
+        jBookStatus.setText(info.getStatus());
     }
+
+    private void populateBorrower(String searchKey) {
+        try {
+            MyConnection cc = new MyConnection();
+            Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
+                    cc.getDatabaseUsername(),
+                    cc.getDatabasePassword());
+            Statement st = con.createStatement();
+            String sql = "";
+            if (searchKey.equals("")) {
+                sql = "SELECT id,name, course, year "
+                        + "FROM USERS order by name";
+            } else {
+                sql = "SELECT id,name, course, year "
+                        + "FROM USERS where name like '%" + searchKey + "%' "
+                        + "order by name";
+            }
+            ResultSet rs = st.executeQuery(sql);
+
+            //Retrieving the ResultSetMetadata object
+            ResultSetMetaData rsMetaData = rs.getMetaData();
+            //Retrieving the list of column names
+            int count = rsMetaData.getColumnCount();
+
+            DefaultTableModel model = new DefaultTableModel();
+            jTblBorrower.setModel(model);
+            //recreate the columns
+            for (int i = 1; i <= count; i++) {
+                model.addColumn(rsMetaData.getColumnName(i));
+            }
+            //retrieve the records and display to table
+            while (rs.next()) {
+                String[] record = new String[count];
+                for (int i = 0; i < count; i++) {
+                    record[i] = rs.getString(i + 1);
+                }
+                //cache.add(record);
+                model.addRow(record);
+            }
+
+            rs.close();
+            st.close();
+            con.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -33,6 +95,19 @@ public class BorrowBook extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jBookID = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        jBookTitle = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        jBookStatus = new javax.swing.JTextField();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jTxtSearch = new javax.swing.JTextField();
+        jBtnSearch = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTblBorrower = new javax.swing.JTable();
+        jBtnBorrowBook = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -47,13 +122,36 @@ public class BorrowBook extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel1.setText("Book Information");
 
+        jLabel2.setText("Book ID");
+
+        jLabel3.setText("Book Title");
+
+        jLabel4.setText("Book Status");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(27, 27, 27)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jBookID, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel3))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jBookTitle)
+                                    .addComponent(jBookStatus))))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -61,7 +159,94 @@ public class BorrowBook extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addContainerGap(78, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addComponent(jBookID, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jBookTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel4)
+                    .addComponent(jBookStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+
+        jLabel5.setText("Enter search keyword");
+
+        jBtnSearch.setText("Search");
+        jBtnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnSearchActionPerformed(evt);
+            }
+        });
+
+        jTblBorrower.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "A", "B", "Title 3", "Title 4"
+            }
+        ));
+        jTblBorrower.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jTblBorrower.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTblBorrowerMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(jTblBorrower);
+
+        jBtnBorrowBook.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jBtnBorrowBook.setText("Borrow Book");
+        jBtnBorrowBook.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnBorrowBookActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jBtnBorrowBook)
+                .addContainerGap())
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addComponent(jLabel5)
+                            .addGap(18, 18, 18)
+                            .addComponent(jTxtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jBtnSearch))
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 548, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(303, Short.MAX_VALUE)
+                .addComponent(jBtnBorrowBook)
+                .addGap(15, 15, 15))
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel5)
+                        .addComponent(jTxtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jBtnSearch))
+                    .addGap(18, 18, 18)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 244, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(54, Short.MAX_VALUE)))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -70,7 +255,9 @@ public class BorrowBook extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -78,7 +265,9 @@ public class BorrowBook extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addGap(16, 16, 16)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(180, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -87,6 +276,65 @@ public class BorrowBook extends javax.swing.JFrame {
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowOpened
+
+    private void jBtnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSearchActionPerformed
+        // TODO add your handling code here:
+        populateBorrower(jTxtSearch.getText());
+    }//GEN-LAST:event_jBtnSearchActionPerformed
+
+    private void jTblBorrowerMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTblBorrowerMouseClicked
+        // TODO add your handling code here:
+        int row = jTblBorrower.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel) jTblBorrower.getModel();
+        borrowerName = model.getValueAt(row, 1).toString();
+        borrowerId = Integer.parseInt(model.getValueAt(row, 0).toString());
+    }//GEN-LAST:event_jTblBorrowerMouseClicked
+
+    private void jBtnBorrowBookActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBorrowBookActionPerformed
+        // TODO add your handling code here:
+        String msg = borrowerName + " is about to borrow book " + jBookTitle.getText() + "?";
+        int result = JOptionPane.showConfirmDialog(this, msg, "Borrow Book",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (result == JOptionPane.YES_OPTION) {
+            //insert to borrow table
+            String sql = "Insert into borrowbook(id_book,id_user,dateTimeBorrowed,status,remarks) values (?,?,?,?,?)";
+            try {
+                MyConnection cc = new MyConnection();
+                Connection con = DriverManager.getConnection(cc.getConnection() + cc.getDatabase(),
+                        cc.getDatabaseUsername(),
+                        cc.getDatabasePassword());
+                PreparedStatement pst = con.prepareStatement(sql);
+                //get the selected author
+
+                pst.setInt(1, Integer.parseInt(jBookID.getText()));
+                pst.setInt(2, borrowerId);
+                pst.setString(3, LocalDate.now().toString());
+                pst.setString(4, "borrowed");
+                pst.setString(5, "NA");
+
+                int row = pst.executeUpdate();
+                //call the populateTable to refresh the content
+                if (row > 0) {
+                    //update the status of the book borrowed
+                    String bSql = "Update books set borrowed = 'yes' where id=" + jBookID.getText();
+                    PreparedStatement pst2 = con.prepareStatement(bSql);
+
+                    int bRow = pst2.executeUpdate();
+                    if (bRow > 0) {
+                        JOptionPane.showMessageDialog(rootPane, "Book has been borrowed!");
+                        this.setVisible(false);
+                    }
+                }
+                pst.close();
+                con.close();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            //display thank you message
+        }
+    }//GEN-LAST:event_jBtnBorrowBookActionPerformed
 
     /**
      * @param args the command line arguments
@@ -124,7 +372,20 @@ public class BorrowBook extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField jBookID;
+    private javax.swing.JTextField jBookStatus;
+    private javax.swing.JTextField jBookTitle;
+    private javax.swing.JButton jBtnBorrowBook;
+    private javax.swing.JButton jBtnSearch;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTable jTblBorrower;
+    private javax.swing.JTextField jTxtSearch;
     // End of variables declaration//GEN-END:variables
 }
